@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>科学技术史知识问答</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.1);
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            position: relative;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #333;
+            font-size: 28px;
+            margin-bottom: 10px;
+        }
+
+        .timer {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            color: #e74c3c;
+            display: none;
+        }
+
+        .content {
+            min-height: 300px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .upload-screen {
+            text-align: center;
+        }
+
+        .upload-screen p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .file-upload {
+            margin: 20px 0;
+            padding: 20px;
+            border: 2px dashed #667eea;
+            border-radius: 10px;
+            background: #f8f9ff;
+        }
+
+        .file-upload input {
+            margin-bottom: 10px;
+        }
+
+        .file-upload label {
+            display: block;
+            color: #667eea;
+            cursor: pointer;
+            padding: 10px;
+            border-radius: 5px;
+            background: #e8f0ff;
+            margin-bottom: 10px;
+        }
+
+        .file-upload label:hover {
+            background: #d0e0ff;
+        }
+
+        .start-screen {
+            text-align: center;
+            display: none;
+        }
+
+        .start-screen p {
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.6;
+        }
+
+        .question-screen {
+            display: none;
+            width: 100%;
+        }
+
+        .question {
+            background: #f8f9fa;
+            padding: 30px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 18px;
+            line-height: 1.8;
+            color: #333;
+        }
+
+        .answer {
+            background: #e8f5e9;
+            padding: 20px;
+            border-radius: 10px;
+            margin-bottom: 20px;
+            font-size: 16px;
+            line-height: 1.6;
+            color: #2e7d32;
+            display: none;
+        }
+
+        .buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        button {
+            background: #667eea;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+        }
+
+        button:hover {
+            background: #5a67d8;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        button:active {
+            transform: translateY(0);
+        }
+
+        button:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        button.secondary {
+            background: #48bb78;
+        }
+
+        button.secondary:hover {
+            background: #38a169;
+        }
+
+        button.skip {
+            background: #ed8936;
+        }
+
+        button.skip:hover {
+            background: #dd6b20;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            align-items: center;
+            justify-content: center;
+            z-index: 1000;
+        }
+
+        .modal-content {
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            text-align: center;
+            max-width: 400px;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                transform: translateY(-50px);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .modal h2 {
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .success h2 {
+            color: #48bb78;
+        }
+
+        .failure h2 {
+            color: #e74c3c;
+        }
+
+        .modal p {
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        .progress {
+            margin-top: 20px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+
+        .status {
+            text-align: center;
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+
+        .status.success {
+            background: #d4edda;
+            color: #155724;
+            border: 1px solid #c3e6cb;
+        }
+
+        .status.error {
+            background: #f8d7da;
+            color: #721c24;
+            border: 1px solid #f5c6cb;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="timer" id="timer">60</div>
+        
+        <div class="header">
+            <h1>科学技术史知识问答</h1>
+        </div>
+
+        <div class="content">
+            <div class="upload-screen" id="uploadScreen">
+                <p>欢迎来到科学技术史知识问答测验！<br>
+                请先上传包含题目的Excel文件（data.xlsx）<br>
+                每次测验需要在1分钟内正确回答3道题目</p>
+                
+                <div class="file-upload">
+                    <label for="fileInput">选择Excel文件</label>
+                    <input type="file" id="fileInput" accept=".xlsx,.xls" style="display: none;" onchange="handleFileUpload(event)">
+                    <div class="status" id="uploadStatus" style="display: none;"></div>
+                </div>
+                
+                <p style="font-size: 14px; color: #888;">
+                    文件格式要求：Excel文件，Sheet1中包含id、q、a三列<br>
+                    分别表示问题id、题面和答案
+                </p>
+            </div>
+
+            <div class="start-screen" id="startScreen">
+                <p>题目已加载完成！<br>
+                每次测验时长1分钟，需要正确回答3道题目。<br>
+                准备好了吗？</p>
+                <button onclick="startQuiz()">开始测验</button>
+                <button onclick="resetToUpload()" style="margin-left: 10px; background: #6c757d;">重新上传文件</button>
+            </div>
+
+            <div class="question-screen" id="questionScreen">
+                <div class="question" id="questionText"></div>
+                <div class="answer" id="answerText"></div>
+                <div class="buttons">
+                    <button onclick="showAnswer()" id="showAnswerBtn">显示答案</button>
+                    <button class="secondary" onclick="nextQuestion()" id="nextBtn" style="display:none;">下一题</button>
+                    <button class="skip" onclick="skipQuestion()">跳过</button>
+                </div>
+                <div class="progress" id="progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal" id="modal">
+        <div class="modal-content" id="modalContent">
+            <h2 id="modalTitle"></h2>
+            <p id="modalText"></p>
+            <button onclick="closeModal()">关闭</button>
+        </div>
+    </div>
+
+    <script>
+        let questions = [];
+        let currentQuestion = null;
+        let usedQuestions = new Set();
+        let correctAnswers = 0;
+        let timerInterval = null;
+        let timeLeft = 60;
+
+        // 处理文件上传
+        function handleFileUpload(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+
+            const status = document.getElementById('uploadStatus');
+            status.style.display = 'block';
+            status.className = 'status';
+            status.textContent = '正在读取文件...';
+
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const data = new Uint8Array(e.target.result);
+                    const workbook = XLSX.read(data, { type: 'array' });
+                    
+                    if (!workbook.SheetNames.includes('Sheet1')) {
+                        throw new Error('找不到Sheet1工作表');
+                    }
+                    
+                    const sheet = workbook.Sheets['Sheet1'];
+                    const jsonData = XLSX.utils.sheet_to_json(sheet);
+                    
+                    if (jsonData.length === 0) {
+                        throw new Error('工作表中没有数据');
+                    }
+                    
+                    // 验证数据格式
+                    const requiredColumns = ['id', 'q', 'a'];
+                    const firstRow = jsonData[0];
+                    const missingColumns = requiredColumns.filter(col => !(col in firstRow));
+                    
+                    if (missingColumns.length > 0) {
+                        throw new Error(`缺少必要的列: ${missingColumns.join(', ')}`);
+                    }
+                    
+                    questions = jsonData.map(item => ({
+                        id: item.id,
+                        question: item.q,
+                        answer: item.a
+                    })).filter(item => item.question && item.answer);
+                    
+                    if (questions.length === 0) {
+                        throw new Error('没有找到有效的题目数据');
+                    }
+                    
+                    status.className = 'status success';
+                    status.textContent = `成功加载 ${questions.length} 道题目`;
+                    
+                    // 延迟显示开始界面
+                    setTimeout(() => {
+                        document.getElementById('uploadScreen').style.display = 'none';
+                        document.getElementById('startScreen').style.display = 'block';
+                    }, 1500);
+                    
+                } catch (error) {
+                    console.error('文件解析失败:', error);
+                    status.className = 'status error';
+                    status.textContent = `文件解析失败: ${error.message}`;
+                }
+            };
+            
+            reader.onerror = function() {
+                status.className = 'status error';
+                status.textContent = '文件读取失败';
+            };
+            
+            reader.readAsArrayBuffer(file);
+        }
+
+        // 重新上传文件
+        function resetToUpload() {
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('uploadScreen').style.display = 'block';
+            document.getElementById('fileInput').value = '';
+            document.getElementById('uploadStatus').style.display = 'none';
+            questions = [];
+        }
+
+        // 开始测验
+        function startQuiz() {
+            if (questions.length === 0) {
+                alert('题目未加载，请先上传题目文件');
+                return;
+            }
+
+            document.getElementById('startScreen').style.display = 'none';
+            document.getElementById('questionScreen').style.display = 'block';
+            document.getElementById('timer').style.display = 'block';
+            
+            correctAnswers = 0;
+            usedQuestions.clear();
+            timeLeft = 60;
+            
+            startTimer();
+            loadNewQuestion();
+        }
+
+        // 开始计时器
+        function startTimer() {
+            updateTimer();
+            timerInterval = setInterval(() => {
+                timeLeft--;
+                updateTimer();
+                
+                if (timeLeft <= 0) {
+                    endQuiz(false);
+                }
+            }, 1000);
+        }
+
+        // 更新计时器显示
+        function updateTimer() {
+            document.getElementById('timer').textContent = timeLeft;
+            if (timeLeft <= 10) {
+                document.getElementById('timer').style.color = '#e74c3c';
+            } else {
+                document.getElementById('timer').style.color = '#667eea';
+            }
+        }
+
+        // 加载新题目
+        function loadNewQuestion() {
+            const availableQuestions = questions.filter(q => !usedQuestions.has(q.id));
+            
+            if (availableQuestions.length === 0) {
+                alert('所有题目已用完！');
+                resetQuiz();
+                return;
+            }
+
+            const randomIndex = Math.floor(Math.random() * availableQuestions.length);
+            currentQuestion = availableQuestions[randomIndex];
+            usedQuestions.add(currentQuestion.id);
+
+            document.getElementById('questionText').textContent = currentQuestion.question;
+            document.getElementById('answerText').textContent = currentQuestion.answer;
+            document.getElementById('answerText').style.display = 'none';
+            document.getElementById('showAnswerBtn').style.display = 'inline-block';
+            document.getElementById('nextBtn').style.display = 'none';
+            
+            updateProgress();
+        }
+
+        // 显示答案
+        function showAnswer() {
+            document.getElementById('answerText').style.display = 'block';
+            document.getElementById('showAnswerBtn').style.display = 'none';
+            document.getElementById('nextBtn').style.display = 'inline-block';
+        }
+
+        // 下一题
+        function nextQuestion() {
+            correctAnswers++;
+            
+            if (correctAnswers >= 3) {
+                endQuiz(true);
+            } else {
+                loadNewQuestion();
+            }
+        }
+
+        // 跳过题目
+        function skipQuestion() {
+            loadNewQuestion();
+        }
+
+        // 更新进度
+        function updateProgress() {
+            document.getElementById('progress').textContent = 
+                `已回答正确: ${correctAnswers}/3 | 已使用题目: ${usedQuestions.size}`;
+        }
+
+        // 结束测验
+        function endQuiz(success) {
+            clearInterval(timerInterval);
+            
+            const modal = document.getElementById('modal');
+            const modalContent = document.getElementById('modalContent');
+            const modalTitle = document.getElementById('modalTitle');
+            const modalText = document.getElementById('modalText');
+            
+            if (success) {
+                modalContent.className = 'modal-content success';
+                modalTitle.textContent = '🎉 挑战成功！';
+                modalText.textContent = `恭喜你！在${60 - timeLeft}秒内完成了挑战。`;
+            } else {
+                modalContent.className = 'modal-content failure';
+                modalTitle.textContent = '⏰ 时间到！';
+                modalText.textContent = `很遗憾，你只答对了${correctAnswers}道题。再接再厉！`;
+            }
+            
+            modal.style.display = 'flex';
+        }
+
+        // 关闭弹窗
+        function closeModal() {
+            document.getElementById('modal').style.display = 'none';
+            resetQuiz();
+        }
+
+        // 重置测验
+        function resetQuiz() {
+            document.getElementById('startScreen').style.display = 'block';
+            document.getElementById('questionScreen').style.display = 'none';
+            document.getElementById('timer').style.display = 'none';
+            document.getElementById('timer').style.color = '#667eea';
+            clearInterval(timerInterval);
+        }
+
+        // 触发文件选择
+        document.getElementById('uploadScreen').addEventListener('click', function(e) {
+            if (e.target.tagName === 'LABEL') {
+                document.getElementById('fileInput').click();
+            }
+        });
+    </script>
+</body>
+</html>
