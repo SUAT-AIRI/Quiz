@@ -32,18 +32,18 @@
 ## 🚀 快速开始
 
 ### 方法一：直接使用
-1. 下载 `Quiz.html` 文件到本地
+1. 下载 `index.html` 文件到本地
 2. 双击文件，用浏览器打开
 3. 准备Excel题库文件并上传
 4. 开始答题挑战！
 
 ### 方法二：克隆仓库
 ```bash
-git clone https://github.com/yourusername/science-history-quiz.git
+git clone https://github.com/SUAT-AIRI/Quiz.git
 cd science-history-quiz
 ```
 
-然后用浏览器打开 `Quiz.html` 文件。
+然后用浏览器打开 `index.html` 文件。
 
 ### 方法三：本地服务器（推荐）
 ```bash
@@ -59,8 +59,8 @@ npx http-server
 ## 📁 文件结构
 
 ```
-science-history-quiz/
-├── Quiz.html          # 主应用文件
+Quiz/
+├── index.html          # 主应用文件
 ├── README.md          # 项目说明文档
 ├── data.xlsx          # 题库示例文件
 └── screenshots/       # 应用截图
